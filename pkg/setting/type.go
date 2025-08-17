@@ -10,5 +10,12 @@ type DatabaseCfg struct {
 }
 
 type ServerCfg struct {
-	Port int
+	Port      int
+	Secret    string
+	JWTSecret string
+}
+
+type Administrator struct {
+	Username string
+	Password string
 }

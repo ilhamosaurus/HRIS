@@ -13,7 +13,7 @@ type Reimburse struct {
 	CreatedAt  time.Time `json:"createdAt" gorm:"column:CreatedAt;type:timestamp;autoCreateTime"`
 	UpdatedAt  time.Time `json:"updatedAt" gorm:"column:UpdatedAt;type:timestamp;autoUpdateTime"`
 
-	User User `json:"user" gorm:"foreignKey:Username;references:Username"`
+	User User `json:"user" gorm:"foreignKey:Username;references:Name"`
 }
 
 func (Reimburse) TableName() string {

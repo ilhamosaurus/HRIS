@@ -9,12 +9,12 @@ type Overtime struct {
 	StartTime   time.Time `json:"startTime" gorm:"column:StartTime;type:timestamp;not null"`
 	EndTime     time.Time `json:"endTime" gorm:"column:EndTime;type:timestamp;not null"`
 	Hours       float64   `json:"hours" gorm:"column:Hours;type:numeric(18,6);not null"`
-	Description string    `json:"description" gorm:"column:Description;type:varchar(255);not null"`
+	Description *string   `json:"description" gorm:"column:Description"`
 	Status      string    `json:"status" gorm:"column:Status;type:varchar(48);not null"`
 	CreatedAt   time.Time `json:"createdAt" gorm:"column:CreatedAt;type:timestamp;autoCreateTime"`
 	UpdatedAt   time.Time `json:"updatedAt" gorm:"column:UpdatedAt;type:timestamp;autoUpdateTime"`
 
-	User User `json:"user" gorm:"foreignKey:Username;references:Username"`
+	User User `json:"user" gorm:"foreignKey:Username;references:Name"`
 }
 
 func (Overtime) TableName() string {

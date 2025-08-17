@@ -7,9 +7,10 @@ import (
 )
 
 var (
-	Cfg      *ini.File
-	Server   ServerCfg
-	Database DatabaseCfg
+	Cfg       *ini.File
+	Server    ServerCfg
+	Database  DatabaseCfg
+	AdminUser Administrator
 )
 
 func init() {
@@ -18,6 +19,10 @@ func init() {
 	if err != nil {
 		log.Fatalf("failed to load config file: %v", err)
 	}
+
+	LoadServer()
+	LoadDatabase()
+	LoadAdministrator()
 }
 
 func LoadServer() {
@@ -27,6 +32,8 @@ func LoadServer() {
 	}
 
 	Server.Port = sec.Key("Port").MustInt(8080)
+	Server.Secret = sec.Key("Secret").MustString("@!@#!#@!#!#!")
+	Server.JWTSecret = sec.Key("JWTSecret").MustString("@!@#!#@!#!#!")
 }
 
 func LoadDatabase() {
@@ -39,6 +46,16 @@ func LoadDatabase() {
 	Database.Host = sec.Key("Host").MustString("localhost")
 	Database.Port = sec.Key("Port").MustInt(5432)
 	Database.User = sec.Key("User").MustString("postgres")
-	Database.Pass = sec.Key("Pass").MustString("@@!#!@@#@!")
+	Database.Pass = sec.Key("Password").MustString("@@!#!@@#@!")
 	Database.Name = sec.Key("Name").MustString("hris")
+}
+
+func LoadAdministrator() {
+	sec, err := Cfg.GetSection("ADMINISTRATOR")
+	if err != nil {
+		log.Fatalf("failed to get section ADMINISTRATOR: %v", err)
+	}
+
+	AdminUser.Username = sec.Key("Username").MustString("admin")
+	AdminUser.Password = sec.Key("Password").MustString("@!@#!#@!@#")
 }
