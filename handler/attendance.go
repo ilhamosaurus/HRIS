@@ -34,7 +34,7 @@ func (h *Handler) CheckOut(c echo.Context) error {
 	now := time.Now()
 	attendance := model.GetAttendace(auth.Username, now)
 
-	if attendance.Username == auth.Username && !attendance.CheckOut.IsZero() {
+	if attendance.Username == auth.Username && attendance.CheckOut != nil {
 		return c.JSON(types.GenerateReponse(http.StatusBadRequest, "already checked out", nil))
 	}
 

@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/ilhamosaurus/HRIS/handler"
+	"github.com/ilhamosaurus/HRIS/middleware"
 	"github.com/ilhamosaurus/HRIS/pkg/setting"
 	"github.com/ilhamosaurus/HRIS/pkg/util"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -14,6 +15,7 @@ func SetupRoutes(e *echo.Echo) {
 
 	validator := util.NewCustomValidator()
 	e.Validator = validator
+	e.Use(middleware.ActivityMiddleware)
 	apiRoute := e.Group("/api")
 
 	apiRoute.POST("/login", h.Login)
