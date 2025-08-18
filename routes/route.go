@@ -24,8 +24,19 @@ func SetupRoutes(e *echo.Echo) {
 		},
 		SigningKey: []byte(setting.Server.JWTSecret),
 	})
+
 	userRoute := apiRoute.Group("/user", jwtMiddleware)
 	{
-		userRoute.GET("/getUserInfo", h.GetUserInfo)
+		userRoute.GET("/info", h.GetUserInfo)
+		userRoute.POST("", h.SetUser)
+		userRoute.PUT("/changePassword", h.ChangePassword)
+	}
+
+	attendanceRoute := apiRoute.Group("/attendance", jwtMiddleware)
+	{
+		attendanceRoute.POST("/checkIn", h.CheckIn)
+		attendanceRoute.POST("/checkOut", h.CheckOut)
+		attendanceRoute.POST("", h.SetAttendance)
+		attendanceRoute.GET("", h.GetAttendances)
 	}
 }

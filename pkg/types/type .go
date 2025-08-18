@@ -109,6 +109,47 @@ type LoginRequest struct {
 	Password string `json:"password" validate:"required,gte=8"`
 }
 
+type ChangePasswordRequest struct {
+	OldPassword string `json:"oldPassword" validate:"required,gte=8"`
+	NewPassword string `json:"newPassword" validate:"required,password"`
+}
+
+type Attendance struct {
+	ID       *int32  `json:"id"`
+	Username string  `json:"username" validate:"required,gte=3"`
+	Date     *string `json:"date" validate:"datetime=20060102"`
+	CheckIn  *string `json:"checkIn" validate:"datetime=2006-01-02T15:04:05Z07:00"`
+	CheckOut *string `json:"checkOut" validate:"datetime=2006-01-02T15:04:05Z07:00"`
+}
+
+func (r Attendance) GetID() int32 {
+	if r.ID == nil {
+		return 0
+	}
+	return *r.ID
+}
+
+func (r Attendance) GetCheckIn() string {
+	if r.CheckIn == nil {
+		return ""
+	}
+	return *r.CheckIn
+}
+
+func (r Attendance) GetDate() string {
+	if r.Date == nil {
+		return ""
+	}
+	return *r.Date
+}
+
+func (r Attendance) GetCheckOut() string {
+	if r.CheckOut == nil {
+		return ""
+	}
+	return *r.CheckOut
+}
+
 type HTTPResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`

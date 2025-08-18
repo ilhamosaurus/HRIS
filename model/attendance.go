@@ -26,14 +26,14 @@ func UpdateAttendance(attendance Attendance) error {
 	return db.Model(Attendance{}).Where(&Attendance{ID: attendance.ID}).Updates(attendance).Error
 }
 
-func GetAttendace(user string, date time.Time) (Attendance, error) {
+func GetAttendace(user string, date time.Time) Attendance {
 	var attendance Attendance
-	err := db.Model(Attendance{}).Where(&Attendance{Username: user, Date: date}).First(&attendance).Error
-	return attendance, err
+	db.Model(Attendance{}).Where(&Attendance{Username: user, Date: date}).First(&attendance)
+	return attendance
 }
 
-func GetAttendaces(cond *Attendance) ([]Attendance, error) {
+func GetAttendaces(cond *Attendance) []Attendance {
 	var attendances []Attendance
-	err := db.Model(Attendance{}).Where(cond).Find(&attendances).Error
-	return attendances, err
+	db.Model(Attendance{}).Where(cond).Find(&attendances)
+	return attendances
 }

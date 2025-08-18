@@ -73,6 +73,30 @@ func (h *Handler) GetUserInfo(c echo.Context) error {
 	return c.JSON(types.GenerateReponse(http.StatusOK, "OK", ToTypeUser(user)))
 }
 
+func (h *Handler) ChangePassword(c echo.Context) error {
+	auth := util.GetUserAuth(c)
+	var req types.ChangePasswordRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(types.GenerateReponse(http.StatusBadRequest, err.Error(), nil))
+	}
+
+	if err := c.Validate(req); err != nil {
+		return c.JSON(types.GenerateReponse(http.StatusBadRequest, err.Error(), nil))
+	}
+
+	user := model.GetUserByUsername(auth.Username)
+	if !h.Hasher.VerifySHAHash(req.OldPassword, user.Password) {
+		return c.JSON(types.GenerateReponse(http.StatusUnauthorized, "invalid credentials", nil))
+	}
+
+	hashedPassword := h.Hasher.GenerateSHAHash(req.NewPassword)
+	user.Password = hashedPassword
+	if err := model.UpdateUser(user); err != nil {
+		return c.JSON(types.GenerateReponse(http.StatusInternalServerError, err.Error(), nil))
+	}
+	return c.JSON(types.GenerateReponse(http.StatusOK, "OK", nil))
+}
+
 func ToModelUser(req types.User) model.User {
 	user := model.User{
 		Name:     req.Username,
