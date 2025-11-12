@@ -19,8 +19,8 @@ func (h *Handler) Login(c echo.Context) error {
 		return c.JSON(types.GenerateReponse(http.StatusBadRequest, err.Error(), nil))
 	}
 
-	user := model.GetUserByUsername(req.Username)
-	if user.Name != req.Username || !h.Hasher.VerifySHAHash(req.Password, user.Password) {
+	user := h.model.GetUserByUsername(req.Username)
+	if user.Name != req.Username || !h.hasher.VerifySHAHash(req.Password, user.Password) {
 		return c.JSON(types.GenerateReponse(http.StatusUnauthorized, "invalid credentials", nil))
 	}
 
@@ -49,19 +49,19 @@ func (h *Handler) SetUser(c echo.Context) error {
 
 	user := ToModelUser(req)
 	if req.ID == nil {
-		hashedPassword := h.Hasher.GenerateSHAHash(user.Password)
+		hashedPassword := h.hasher.GenerateSHAHash(user.Password)
 		user.Password = hashedPassword
-		if err := model.AddUser(user); err != nil {
+		if err := h.model.AddUser(user); err != nil {
 			return c.JSON(types.GenerateReponse(http.StatusInternalServerError, err.Error(), nil))
 		}
 		return c.JSON(types.GenerateReponse(http.StatusOK, "OK", nil))
 	}
 
 	if req.Password != nil {
-		hashedPassword := h.Hasher.GenerateSHAHash(user.Password)
+		hashedPassword := h.hasher.GenerateSHAHash(user.Password)
 		user.Password = hashedPassword
 	}
-	if err := model.UpdateUser(user); err != nil {
+	if err := h.model.UpdateUser(user); err != nil {
 		return c.JSON(types.GenerateReponse(http.StatusInternalServerError, err.Error(), nil))
 	}
 	return c.JSON(types.GenerateReponse(http.StatusOK, "OK", nil))
@@ -69,7 +69,7 @@ func (h *Handler) SetUser(c echo.Context) error {
 
 func (h *Handler) GetUserInfo(c echo.Context) error {
 	auth := util.GetUserAuth(c)
-	user := model.GetUserByUsername(auth.Username)
+	user := h.model.GetUserByUsername(auth.Username)
 	return c.JSON(types.GenerateReponse(http.StatusOK, "OK", ToTypeUser(user)))
 }
 
@@ -84,14 +84,14 @@ func (h *Handler) ChangePassword(c echo.Context) error {
 		return c.JSON(types.GenerateReponse(http.StatusBadRequest, err.Error(), nil))
 	}
 
-	user := model.GetUserByUsername(auth.Username)
-	if !h.Hasher.VerifySHAHash(req.OldPassword, user.Password) {
+	user := h.model.GetUserByUsername(auth.Username)
+	if !h.hasher.VerifySHAHash(req.OldPassword, user.Password) {
 		return c.JSON(types.GenerateReponse(http.StatusUnauthorized, "invalid credentials", nil))
 	}
 
-	hashedPassword := h.Hasher.GenerateSHAHash(req.NewPassword)
+	hashedPassword := h.hasher.GenerateSHAHash(req.NewPassword)
 	user.Password = hashedPassword
-	if err := model.UpdateUser(user); err != nil {
+	if err := h.model.UpdateUser(user); err != nil {
 		return c.JSON(types.GenerateReponse(http.StatusInternalServerError, err.Error(), nil))
 	}
 	return c.JSON(types.GenerateReponse(http.StatusOK, "OK", nil))
@@ -116,8 +116,8 @@ func ToModelUser(req types.User) model.User {
 	return user
 }
 
-func ToTypeUser(user model.User) types.User {
-	return types.User{
+func ToTypeUser(user model.User) *types.User {
+	return &types.User{
 		ID:       &user.ID,
 		Username: user.Name,
 		Role:     user.UserRole,

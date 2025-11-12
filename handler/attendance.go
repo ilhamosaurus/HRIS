@@ -14,7 +14,12 @@ import (
 func (h *Handler) CheckIn(c echo.Context) error {
 	auth := util.GetUserAuth(c)
 	now := time.Now()
-	attendance := model.GetAttendace(auth.Username, now)
+	attendance := h.model.GetAttendace(auth.Username, now)
+
+	overtime := h.model.GetOvertime(auth.Username, types.Approved.String(), now)
+	if now.Weekday() == time.Saturday && overtime.Username != auth.Username || now.Weekday() == time.Sunday && overtime.Username != auth.Username {
+		return c.JSON(types.GenerateReponse(http.StatusBadRequest, "no overtime approved", nil))
+	}
 
 	if attendance.Username == auth.Username && !attendance.CheckIn.IsZero() {
 		return c.JSON(types.GenerateReponse(http.StatusBadRequest, "already checked in", nil))
@@ -23,7 +28,7 @@ func (h *Handler) CheckIn(c echo.Context) error {
 	attendance.Username = auth.Username
 	attendance.Date = now
 	attendance.CheckIn = now
-	if err := model.AddAttendance(attendance); err != nil {
+	if err := h.model.AddAttendance(attendance); err != nil {
 		return c.JSON(types.GenerateReponse(http.StatusInternalServerError, err.Error(), nil))
 	}
 	return c.JSON(types.GenerateReponse(http.StatusOK, "OK", nil))
@@ -32,7 +37,7 @@ func (h *Handler) CheckIn(c echo.Context) error {
 func (h *Handler) CheckOut(c echo.Context) error {
 	auth := util.GetUserAuth(c)
 	now := time.Now()
-	attendance := model.GetAttendace(auth.Username, now)
+	attendance := h.model.GetAttendace(auth.Username, now)
 
 	if attendance.Username == auth.Username && attendance.CheckOut != nil {
 		return c.JSON(types.GenerateReponse(http.StatusBadRequest, "already checked out", nil))
@@ -43,7 +48,7 @@ func (h *Handler) CheckOut(c echo.Context) error {
 	}
 
 	attendance.CheckOut = &now
-	if err := model.UpdateAttendance(attendance); err != nil {
+	if err := h.model.UpdateAttendance(attendance); err != nil {
 		return c.JSON(types.GenerateReponse(http.StatusInternalServerError, err.Error(), nil))
 	}
 	return c.JSON(types.GenerateReponse(http.StatusOK, "OK", nil))
@@ -70,13 +75,13 @@ func (h *Handler) SetAttendance(c echo.Context) error {
 	}
 
 	if req.ID != nil {
-		if err := model.UpdateAttendance(attendance); err != nil {
+		if err := h.model.UpdateAttendance(attendance); err != nil {
 			return c.JSON(types.GenerateReponse(http.StatusInternalServerError, err.Error(), nil))
 		}
 		return c.JSON(types.GenerateReponse(http.StatusOK, "OK", nil))
 	}
 
-	if err := model.AddAttendance(attendance); err != nil {
+	if err := h.model.AddAttendance(attendance); err != nil {
 		return c.JSON(types.GenerateReponse(http.StatusInternalServerError, err.Error(), nil))
 	}
 	return c.JSON(types.GenerateReponse(http.StatusOK, "OK", nil))
@@ -87,15 +92,12 @@ func (h *Handler) GetAttendances(c echo.Context) error {
 
 	var existingAttendances []model.Attendance
 	if auth.Role != types.Admin {
-		existingAttendances = model.GetAttendaces(&model.Attendance{Username: auth.Username})
+		existingAttendances = h.model.GetAttendaces(&model.Attendance{Username: auth.Username})
 	} else {
 		cond := model.Attendance{}
 		if c.QueryParam("username") != "" {
 			cond.Username = c.QueryParam("username")
-		} else {
-			cond.Username = auth.Username
 		}
-
 		if c.QueryParam("date") != "" {
 			date, err := StringToDate(c.QueryParam("date"))
 			if err != nil {
@@ -104,10 +106,10 @@ func (h *Handler) GetAttendances(c echo.Context) error {
 			cond.Date = date
 		}
 
-		existingAttendances = model.GetAttendaces(&cond)
+		existingAttendances = h.model.GetAttendaces(&cond)
 	}
 
-	attendances := make([]types.Attendance, len(existingAttendances))
+	attendances := make([]*types.Attendance, len(existingAttendances))
 	for i := range existingAttendances {
 		attendances[i] = ToTypeAttendance(existingAttendances[i])
 	}
@@ -150,7 +152,7 @@ func ToModelAttendace(req types.Attendance) (model.Attendance, error) {
 	return attendance, nil
 }
 
-func ToTypeAttendance(attendance model.Attendance) types.Attendance {
+func ToTypeAttendance(attendance model.Attendance) *types.Attendance {
 	typeAttendance := types.Attendance{
 		ID:       &attendance.ID,
 		Username: attendance.Username,
@@ -167,7 +169,7 @@ func ToTypeAttendance(attendance model.Attendance) types.Attendance {
 		typeAttendance.CheckOut = &checkOut
 	}
 
-	return typeAttendance
+	return &typeAttendance
 }
 
 func ParseTimeFromString(s string) (time.Time, error) {

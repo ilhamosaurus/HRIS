@@ -11,7 +11,11 @@ import (
 
 var db *gorm.DB
 
-func init() {
+type Model struct {
+	db *gorm.DB
+}
+
+func NewModel() (*Model, error) {
 	var dialector gorm.Dialector
 	var err error
 
@@ -36,15 +40,17 @@ func init() {
 
 	db, err = gorm.Open(dialector, &opts)
 	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+		return nil, err
 	}
 
 	err = db.AutoMigrate(&User{}, &Attendance{}, &Overtime{}, &Reimburse{}, &Payslip{}, &UserActivity{})
 	if err != nil {
-		log.Fatalf("failed to migrate database: %v", err)
+		return nil, err
 	}
 
-	if err := Seed(db); err != nil {
-		log.Fatalf("failed to seed database: %v", err)
+	model := &Model{db: db}
+	if err := Seed(model); err != nil {
+		return nil, err
 	}
+	return model, nil
 }

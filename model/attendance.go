@@ -5,9 +5,11 @@ import "time"
 type Attendance struct {
 	ID        int32      `json:"id" gorm:"column:ID;primaryKey;autoIncrement"`
 	Username  string     `json:"username" gorm:"column:Username;type:varchar(48);not null"`
-	Date      time.Time  `json:"date" gorm:"column:Date;type:date;index:idx_date_attendance,unique;not null"`
+	Date      time.Time  `json:"date" gorm:"column:Date;type:date;not null"`
 	CheckIn   time.Time  `json:"checkIn" gorm:"column:CheckIn;type:timestamp;not null"`
 	CheckOut  *time.Time `json:"checkOut" gorm:"column:CheckOut;type:timestamp"`
+	Longitude string     `json:"longitude" gorm:"column:Longitude"`
+	Latitude  string     `json:"latitude" gorm:"column:Latitude"`
 	CreatedAt time.Time  `json:"createdAt" gorm:"column:CreatedAt;type:timestamp;autoCreateTime"`
 	UpdatedAt time.Time  `json:"updatedAt" gorm:"column:UpdatedAt;type:timestamp;autoUpdateTime"`
 
@@ -18,22 +20,22 @@ func (Attendance) TableName() string {
 	return "hris_attendance"
 }
 
-func AddAttendance(attendance Attendance) error {
-	return db.Create(&attendance).Error
+func (m *Model) AddAttendance(attendance Attendance) error {
+	return m.db.Create(&attendance).Error
 }
 
-func UpdateAttendance(attendance Attendance) error {
-	return db.Model(Attendance{}).Where(&Attendance{ID: attendance.ID}).Updates(attendance).Error
+func (m *Model) UpdateAttendance(attendance Attendance) error {
+	return m.db.Model(Attendance{}).Where(&Attendance{ID: attendance.ID}).Updates(attendance).Error
 }
 
-func GetAttendace(user string, date time.Time) Attendance {
+func (m *Model) GetAttendace(user string, date time.Time) Attendance {
 	var attendance Attendance
-	db.Model(Attendance{}).Where(&Attendance{Username: user, Date: date}).First(&attendance)
+	m.db.Model(Attendance{}).Where(&Attendance{Username: user, Date: date}).First(&attendance)
 	return attendance
 }
 
-func GetAttendaces(cond *Attendance) []Attendance {
+func (m *Model) GetAttendaces(cond *Attendance) []Attendance {
 	var attendances []Attendance
-	db.Model(Attendance{}).Where(cond).Find(&attendances)
+	m.db.Model(Attendance{}).Where(cond).Find(&attendances)
 	return attendances
 }

@@ -3,8 +3,9 @@ package model
 import "time"
 
 type Payslip struct {
-	Date          time.Time  `json:"date" gorm:"column:Date;type:date;primaryKey;not null"`
-	Username      string     `json:"username" gorm:"column:Username;primaryKey;not null"`
+	Code          string     `json:"code" gorm:"column:Code;primaryKey;type:varchar(255);not null"`
+	Date          time.Time  `json:"date" gorm:"column:Date;type:date;not null"`
+	Username      string     `json:"username" gorm:"column:Username;not null"`
 	Attendance    int32      `json:"attendate" gorm:"column:Attendate;not null"`
 	BaseSalary    float64    `json:"baseSalary" gorm:"column:BaseSalary;type:numeric(18,6);not null"`
 	OvertimeHours *float64   `json:"overtimeHours" gorm:"column:OvertimeHours;type:numeric(18,6)"`
@@ -23,26 +24,26 @@ func (Payslip) TableName() string {
 	return "hris_payslip"
 }
 
-func AddPayslip(payslip Payslip) error {
-	return db.Create(&payslip).Error
+func (m *Model) AddPayslip(payslip Payslip) error {
+	return m.db.Create(&payslip).Error
 }
 
-func UpdatePayslip(payslip Payslip) error {
-	return db.Model(Payslip{}).Where(&Payslip{Date: payslip.Date, Username: payslip.Username}).Updates(payslip).Error
+func (m *Model) UpdatePayslip(payslip Payslip) error {
+	return m.db.Model(Payslip{}).Where(&Payslip{Code: payslip.Code}).Updates(payslip).Error
 }
 
-func GetPayslipById(username string, date time.Time) (Payslip, error) {
+func (m *Model) GetPayslipByCode(code string) (Payslip, error) {
 	var payslip Payslip
-	err := db.Model(Payslip{}).Where(&Payslip{Username: username, Date: date}).First(&payslip).Error
+	err := m.db.Model(Payslip{}).Where(&Payslip{Code: code}).First(&payslip).Error
 	return payslip, err
 }
 
-func GetPayslips(cond *Payslip) ([]Payslip, error) {
+func (m *Model) GetPayslips(cond *Payslip) ([]Payslip, error) {
 	var payslips []Payslip
-	err := db.Model(Payslip{}).Where(cond).Find(&payslips).Error
+	err := m.db.Model(Payslip{}).Where(cond).Find(&payslips).Error
 	return payslips, err
 }
 
-func DeletePayslip(username string, date time.Time) error {
-	return db.Model(Payslip{}).Where(&Payslip{Username: username, Date: date}).Delete(&Payslip{}).Error
+func (m *Model) DeletePayslip(username string, date time.Time) error {
+	return m.db.Model(Payslip{}).Where(&Payslip{Username: username, Date: date}).Delete(&Payslip{}).Error
 }

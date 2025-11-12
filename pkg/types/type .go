@@ -32,6 +32,10 @@ func (r Role) String() string {
 	}
 }
 
+func (r Role) IsAdmin() bool {
+	return r == Admin
+}
+
 type Status uint32
 
 const (
@@ -76,28 +80,28 @@ type User struct {
 	Active   *bool    `json:"active"`
 }
 
-func (u User) GetSalary() float64 {
+func (u *User) GetSalary() float64 {
 	if u.Salary == nil {
 		return 0
 	}
 	return *u.Salary
 }
 
-func (u User) IsActive() bool {
+func (u *User) IsActive() bool {
 	if u.Active == nil {
 		return false
 	}
 	return *u.Active
 }
 
-func (u User) GetID() int32 {
+func (u *User) GetID() int32 {
 	if u.ID == nil {
 		return 0
 	}
 	return *u.ID
 }
 
-func (u User) GetPassword() string {
+func (u *User) GetPassword() string {
 	if u.Password == nil {
 		return ""
 	}
@@ -122,28 +126,28 @@ type Attendance struct {
 	CheckOut *string `json:"checkOut" validate:"datetime=2006-01-02T15:04:05Z07:00"`
 }
 
-func (r Attendance) GetID() int32 {
+func (r *Attendance) GetID() int32 {
 	if r.ID == nil {
 		return 0
 	}
 	return *r.ID
 }
 
-func (r Attendance) GetCheckIn() string {
+func (r *Attendance) GetCheckIn() string {
 	if r.CheckIn == nil {
 		return ""
 	}
 	return *r.CheckIn
 }
 
-func (r Attendance) GetDate() string {
+func (r *Attendance) GetDate() string {
 	if r.Date == nil {
 		return ""
 	}
 	return *r.Date
 }
 
-func (r Attendance) GetCheckOut() string {
+func (r *Attendance) GetCheckOut() string {
 	if r.CheckOut == nil {
 		return ""
 	}
@@ -162,4 +166,51 @@ func GenerateReponse(code int, message string, data any) (int, HTTPResponse) {
 		Message: message,
 		Data:    data,
 	}
+}
+
+type Overtime struct {
+	ID          *int32   `json:"id"`
+	Date        string   `json:"date" validate:"required,date"`
+	Username    string   `json:"username" validate:"required,gte=3"`
+	StartTime   *string  `json:"startTime" validate:"datetime"`
+	EndTime     *string  `json:"endTime" validate:"datetime"`
+	Hours       *float64 `json:"hours" validate:"gte=0"`
+	Description *string  `json:"description"`
+	Status      *string  `json:"status" validate:"status"`
+	Approval    *string  `json:"approval"`
+}
+
+func (o *Overtime) GetID() int32 {
+	if o.ID == nil {
+		return 0
+	}
+	return *o.ID
+}
+
+func (o *Overtime) GetStartTime() string {
+	if o.StartTime == nil {
+		return ""
+	}
+	return *o.StartTime
+}
+
+func (o *Overtime) GetEndTime() string {
+	if o.EndTime == nil {
+		return ""
+	}
+	return *o.EndTime
+}
+
+func (o *Overtime) GetDescription() string {
+	if o.Description == nil {
+		return ""
+	}
+	return *o.Description
+}
+
+func (o *Overtime) GetStatus() Status {
+	if o.Status == nil {
+		return Unknown_Status
+	}
+	return StringToStatus(*o.Status)
 }

@@ -20,32 +20,32 @@ func (Reimburse) TableName() string {
 	return "hris_reimburse"
 }
 
-func AddReimburse(reimburse Reimburse) error {
-	return db.Create(&reimburse).Error
+func (m *Model) AddReimburse(reimburse Reimburse) error {
+	return m.db.Create(&reimburse).Error
 }
 
-func UpdateReimburse(reimburse Reimburse) error {
-	return db.Model(Reimburse{}).Where(&Reimburse{ID: reimburse.ID}).Updates(reimburse).Error
+func (m *Model) UpdateReimburse(reimburse Reimburse) error {
+	return m.db.Model(Reimburse{}).Where(&Reimburse{ID: reimburse.ID}).Updates(reimburse).Error
 }
 
-func GetReimburseById(id int32) (Reimburse, error) {
+func (m *Model) GetReimburseById(id int32) (Reimburse, error) {
 	var reimburse Reimburse
-	err := db.Model(Reimburse{}).Where(&Reimburse{ID: id}).First(&reimburse).Error
+	err := m.db.Model(Reimburse{}).Where(&Reimburse{ID: id}).First(&reimburse).Error
 	return reimburse, err
 }
 
-func GetReimburseByName(name string) (Reimburse, error) {
+func (m *Model) GetReimburseByName(name string) (Reimburse, error) {
 	var reimburse Reimburse
-	err := db.Model(Reimburse{}).Where(&Reimburse{Name: name}).First(&reimburse).Error
+	err := m.db.Model(Reimburse{}).Where(&Reimburse{Name: name}).First(&reimburse).Error
 	return reimburse, err
 }
 
-func GetReimburses(cond *Reimburse) ([]Reimburse, error) {
+func (m *Model) GetReimburses(cond *Reimburse) ([]Reimburse, error) {
 	var reimburses []Reimburse
-	err := db.Model(Reimburse{}).Where(cond).Find(&reimburses).Error
+	err := m.db.Model(Reimburse{}).Where(cond).Find(&reimburses).Error
 	return reimburses, err
 }
 
-func DeleteReimburse(id int32) error {
-	return db.Model(Reimburse{}).Where(&Reimburse{ID: id}).Delete(&Reimburse{}).Error
+func (m *Model) DeleteReimburse(id int32) error {
+	return m.db.Model(Reimburse{}).Where(&Reimburse{ID: id}).Delete(&Reimburse{}).Error
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/ilhamosaurus/HRIS/pkg/setting"
 	"github.com/ilhamosaurus/HRIS/pkg/types"
 	"github.com/ilhamosaurus/HRIS/pkg/util"
-	"gorm.io/gorm"
 )
 
 type MockUser struct {
@@ -16,7 +15,7 @@ type MockUser struct {
 	Salary   float64 `json:"salary"`
 }
 
-func Seed(db *gorm.DB) error {
+func Seed(model *Model) error {
 	hasher := util.NewHasher(setting.Server.Secret)
 
 	hashedAdminPassword := hasher.GenerateSHAHash(setting.AdminUser.Password)
@@ -27,9 +26,9 @@ func Seed(db *gorm.DB) error {
 		Salary:   0,
 		Active:   true,
 	}
-	existingAdmin := GetUserByUsername(adminUser.Name)
+	existingAdmin := model.GetUserByUsername(adminUser.Name)
 	if existingAdmin.Name != adminUser.Name {
-		if err := AddUser(adminUser); err != nil {
+		if err := model.AddUser(adminUser); err != nil {
 			return err
 		}
 	}
@@ -44,7 +43,7 @@ func Seed(db *gorm.DB) error {
 		return err
 	}
 
-	tx := db.Begin()
+	tx := model.db.Begin()
 	for i := range mockUsers {
 		user := User{
 			Name:     mockUsers[i].Username,
@@ -54,7 +53,7 @@ func Seed(db *gorm.DB) error {
 			Active:   true,
 		}
 
-		existingUser := GetUserByUsername(user.Name)
+		existingUser := model.GetUserByUsername(user.Name)
 		if existingUser.Name == user.Name {
 			continue
 		}

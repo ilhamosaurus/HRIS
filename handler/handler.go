@@ -1,11 +1,18 @@
 package handler
 
-import "github.com/ilhamosaurus/HRIS/pkg/util"
+import (
+	"github.com/ilhamosaurus/HRIS/model"
+	"github.com/ilhamosaurus/HRIS/pkg/util"
+)
 
 type Handler struct {
-	Hasher *util.Hasher
+	hasher *util.Hasher
+	model  *model.Model
 }
 
-func NewHandler(hasher *util.Hasher) *Handler {
-	return &Handler{Hasher: hasher}
+func NewHandler(hasher *util.Hasher, model *model.Model) *Handler {
+	return &Handler{
+		hasher: hasher,
+		model:  model,
+	}
 }

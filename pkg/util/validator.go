@@ -16,6 +16,8 @@ func NewCustomValidator() *CustomValidator {
 	v := validator.New()
 	v.RegisterValidation("role", role)
 	v.RegisterValidation("password", password)
+	v.RegisterValidation("date", date)
+	v.RegisterValidation("status", status)
 	return &CustomValidator{validator: v}
 }
 
@@ -32,6 +34,10 @@ func (c *CustomValidator) ValidationError(err error) map[string]string {
 				errsMap[errs[i].Field()] = fmt.Sprintf("%s is not a valid role", errs[i].Value())
 			case "password":
 				errsMap[errs[i].Field()] = fmt.Sprintf("%s must contain at least one uppercase letter, one lowercase letter, one number, and one special character", errs[i].Field())
+			case "date":
+				errsMap[errs[i].Field()] = fmt.Sprintf("%s is not a valid date, please use YYYYMMDD", errs[i].Value())
+			case "status":
+				errsMap[errs[i].Field()] = fmt.Sprintf("%s is not a valid status", errs[i].Value())
 			default:
 				errsMap[errs[i].Field()] = fmt.Sprintf("%s, %s", errs[i].Tag(), errs[i].Param())
 			}
@@ -64,6 +70,14 @@ var (
 		}
 
 		return true
+	}
+	dateRe                = regexp.MustCompile(`((19|20)[0-9]{2})(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])`)
+	date   validator.Func = func(fl validator.FieldLevel) bool {
+		return dateRe.MatchString(fl.Field().String())
+	}
+	status validator.Func = func(fl validator.FieldLevel) bool {
+		status := types.StringToStatus(fl.Field().String())
+		return status != types.Unknown_Status
 	}
 )
 

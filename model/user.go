@@ -17,32 +17,32 @@ func (User) TableName() string {
 	return "hris_user"
 }
 
-func AddUser(user User) error {
-	return db.Create(&user).Error
+func (m *Model) AddUser(user User) error {
+	return m.db.Create(&user).Error
 }
 
-func UpdateUser(user User) error {
-	return db.Model(User{}).Where(&User{ID: user.ID}).Updates(user).Error
+func (m *Model) UpdateUser(user User) error {
+	return m.db.Model(User{}).Where(&User{ID: user.ID}).Updates(user).Error
 }
 
-func DeleteUser(username string) error {
-	return db.Model(User{}).Where(&User{Name: username}).Delete(&User{}).Error
+func (m *Model) DeleteUser(username string) error {
+	return m.db.Model(User{}).Where(&User{Name: username}).Delete(&User{}).Error
 }
 
-func GetUserByUsername(username string) User {
+func (m *Model) GetUserByUsername(username string) User {
 	var user User
-	db.Model(User{}).Where(&User{Name: username}).First(&user)
+	m.db.Model(User{}).Where(&User{Name: username}).First(&user)
 	return user
 }
 
-func GetUserById(id int32) User {
+func (m *Model) GetUserById(id int32) User {
 	var user User
-	db.Model(User{}).Where(&User{ID: id}).First(&user)
+	m.db.Model(User{}).Where(&User{ID: id}).First(&user)
 	return user
 }
 
-func GetUsers(cond *User) []User {
+func (m *Model) GetUsers(cond *User) []User {
 	var users []User
-	db.Model(User{}).Where(cond).Find(&users)
+	m.db.Model(User{}).Where(cond).Find(&users)
 	return users
 }
