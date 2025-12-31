@@ -10,13 +10,19 @@ import (
 )
 
 type JWTCustomClaim struct {
+	ID       int64      `json:"id"`
 	Username string     `json:"username"`
 	Role     types.Role `json:"role"`
 	jwt.RegisteredClaims
 }
 
-func GeneratoeJWTToken(username, role string) (string, error) {
+func (c *JWTCustomClaim) IsAdmin() bool {
+	return c.Role == types.Admin
+}
+
+func GeneratoeJWTToken(id int64, username, role string) (string, error) {
 	claims := JWTCustomClaim{
+		ID:       id,
 		Username: username,
 		Role:     types.StringToRole(role),
 		RegisteredClaims: jwt.RegisteredClaims{

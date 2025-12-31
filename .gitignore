@@ -1,3 +1,5 @@
 *.cfg
 tmp
 *.exe
+HRIS
+*.db

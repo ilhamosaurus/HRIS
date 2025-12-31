@@ -48,6 +48,7 @@ func LoadDatabase() {
 	Database.User = sec.Key("User").MustString("postgres")
 	Database.Pass = sec.Key("Password").MustString("@@!#!@@#@!")
 	Database.Name = sec.Key("Name").MustString("hris")
+	Database.DSN = sec.Key("DSN").MustString("hris.db")
 }
 
 func LoadAdministrator() {

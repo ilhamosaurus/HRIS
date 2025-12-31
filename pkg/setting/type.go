@@ -7,6 +7,7 @@ type DatabaseCfg struct {
 	User string
 	Pass string
 	Name string
+	DSN  string
 }
 
 type ServerCfg struct {
