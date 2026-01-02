@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"mime"
@@ -25,6 +26,12 @@ var (
 
 type CustomeMiddleware struct {
 	userActivityDAO useractivitydao.UserActivityDAO
+}
+
+func NewCustomMiddleware(userActivityDAO useractivitydao.UserActivityDAO) *CustomeMiddleware {
+	return &CustomeMiddleware{
+		userActivityDAO: userActivityDAO,
+	}
 }
 
 func (m *CustomeMiddleware) ActivityMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
@@ -122,5 +129,16 @@ func (m *CustomeMiddleware) ActivityMiddleware(next echo.HandlerFunc) echo.Handl
 		}
 
 		return m.userActivityDAO.Create(c.Request().Context(), log)
+	}
+}
+
+func (m *CustomeMiddleware) AuthMiddeware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		auth := util.GetUserAuth(c)
+		ctx := context.WithValue(c.Request().Context(), util.IDKey, auth.ID)
+		ctx = context.WithValue(ctx, util.UsernameKey, auth.Username)
+		ctx = context.WithValue(ctx, util.RoleKey, auth.Role)
+		c.SetRequest(c.Request().WithContext(ctx))
+		return next(c)
 	}
 }

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"time"
 
 	"github.com/ilhamosaurus/HRIS/internal/model"
 	"gorm.io/gorm"
@@ -11,6 +12,7 @@ type AttendanceDAO interface {
 	Create(context.Context, *model.Attendance) error
 	Update(context.Context, *model.Attendance) error
 	GetByID(context.Context, int64) (*model.Attendance, error)
+	GetByDateUsername(context.Context, string, time.Time) (*model.Attendance, error)
 	GetAttendaces(context.Context, map[string]any, int, int) ([]*model.Attendance, int64, error)
 	Delete(context.Context, int64) error
 }
@@ -34,6 +36,14 @@ func (d *attendanceDAO) Update(ctx context.Context, attendance *model.Attendance
 func (d *attendanceDAO) GetByID(ctx context.Context, id int64) (*model.Attendance, error) {
 	var attendance model.Attendance
 	if err := d.db.WithContext(ctx).Where(&model.Attendance{ID: id}).First(&attendance).Error; err != nil {
+		return nil, err
+	}
+	return &attendance, nil
+}
+
+func (d *attendanceDAO) GetByDateUsername(ctx context.Context, username string, date time.Time) (*model.Attendance, error) {
+	var attendance model.Attendance
+	if err := d.db.WithContext(ctx).Where(&model.Attendance{Username: username, Date: date}).First(&attendance).Error; err != nil {
 		return nil, err
 	}
 	return &attendance, nil

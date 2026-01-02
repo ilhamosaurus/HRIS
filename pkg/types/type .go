@@ -1,6 +1,16 @@
 package types
 
-import "strings"
+import (
+	"errors"
+	"strings"
+)
+
+var (
+	ErrUsernameNotExist = errors.New("username does not exist")
+	ErrIDNotExist       = errors.New("id does not exist")
+	ErrRoleNotExist     = errors.New("role does not exist")
+	ErrUnauthorized     = errors.New("unauthorized access")
+)
 
 type Role uint32
 

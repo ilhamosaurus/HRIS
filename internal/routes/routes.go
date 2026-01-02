@@ -3,6 +3,8 @@ package routes
 import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/ilhamosaurus/HRIS/internal/container"
+	customiddleware "github.com/ilhamosaurus/HRIS/internal/middleware"
+	attendanceroute "github.com/ilhamosaurus/HRIS/internal/modules/attendance/route"
 	userroute "github.com/ilhamosaurus/HRIS/internal/modules/user/route"
 	"github.com/ilhamosaurus/HRIS/pkg/setting"
 	"github.com/ilhamosaurus/HRIS/pkg/util"
@@ -24,6 +26,8 @@ func NewRoutes(container *container.Container) *Routes {
 func (r *Routes) SetupRoutes(e *echo.Echo) {
 	validator := util.NewCustomValidator()
 	e.Validator = validator
+	customMiddleware := customiddleware.NewCustomMiddleware(r.container.UserActivityDAO)
+	e.Use(customMiddleware.ActivityMiddleware)
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "Method = ${method} | URL = \"${uri}\"| Status = ${status} | Latency = ${latency_human}\n",
 	}))
@@ -45,7 +49,11 @@ func (r *Routes) SetupRoutes(e *echo.Echo) {
 	})
 
 	apiRoute.Use(jwtMiddleware)
+	apiRoute.Use(customMiddleware.AuthMiddeware)
 
 	userRoute := userroute.NewUserRoute(r.container.UserHandler)
 	userRoute.RegisterRoutes(apiRoute)
+
+	attendanceRoute := attendanceroute.NewAttendanceRoute(r.container.AttendanceHandler)
+	attendanceRoute.RegisterRoutes(apiRoute)
 }
