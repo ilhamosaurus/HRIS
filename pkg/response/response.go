@@ -1,6 +1,10 @@
 package response
 
-import "github.com/labstack/echo/v4"
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
 
 type Response struct {
 	Code    int    `json:"code"`
@@ -20,6 +24,14 @@ func BadRequest(c echo.Context, message string) error {
 	return c.JSON(400, Response{
 		Code:    400,
 		Message: message,
+	})
+}
+
+func ValidationFailed(c echo.Context, err error) error {
+	return c.JSON(http.StatusBadRequest, Response{
+		Code:    http.StatusBadRequest,
+		Message: "validation failed",
+		Data:    err,
 	})
 }
 

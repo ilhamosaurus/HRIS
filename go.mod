@@ -5,12 +5,12 @@ go 1.24.2
 require (
 	github.com/labstack/echo-jwt/v4 v4.3.1
 	gopkg.in/ini.v1 v1.67.0
+	gorm.io/driver/sqlite v1.6.0
 )
 
 require (
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	golang.org/x/time v0.11.0 // indirect
-	gorm.io/driver/sqlite v1.6.0 // indirect
 )
 
 require (

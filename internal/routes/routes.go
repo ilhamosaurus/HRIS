@@ -5,6 +5,7 @@ import (
 	"github.com/ilhamosaurus/HRIS/internal/container"
 	customiddleware "github.com/ilhamosaurus/HRIS/internal/middleware"
 	attendanceroute "github.com/ilhamosaurus/HRIS/internal/modules/attendance/route"
+	overtimeroute "github.com/ilhamosaurus/HRIS/internal/modules/overtime/route"
 	userroute "github.com/ilhamosaurus/HRIS/internal/modules/user/route"
 	"github.com/ilhamosaurus/HRIS/pkg/setting"
 	"github.com/ilhamosaurus/HRIS/pkg/util"
@@ -34,11 +35,11 @@ func (r *Routes) SetupRoutes(e *echo.Echo) {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{"*"},
-		AllowMethods: []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE},
+		AllowMethods: []string{echo.GET, echo.PUT, echo.PATCH, echo.POST, echo.DELETE},
 	}))
 	e.Use(middleware.Recover())
 
-	apiRoute := e.Group("/api")
+	apiRoute := e.Group("/api/v1")
 	apiRoute.POST("/login", r.container.AuthHandler.Login)
 
 	jwtMiddleware := echojwt.WithConfig(echojwt.Config{
@@ -56,4 +57,7 @@ func (r *Routes) SetupRoutes(e *echo.Echo) {
 
 	attendanceRoute := attendanceroute.NewAttendanceRoute(r.container.AttendanceHandler)
 	attendanceRoute.RegisterRoutes(apiRoute)
+
+	overtimeRoute := overtimeroute.NewOvertimeRoute(r.container.OvertimeHandler)
+	overtimeRoute.RegisterRoute(apiRoute)
 }

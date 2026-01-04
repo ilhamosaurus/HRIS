@@ -6,10 +6,13 @@ import (
 )
 
 var (
-	ErrUsernameNotExist = errors.New("username does not exist")
-	ErrIDNotExist       = errors.New("id does not exist")
-	ErrRoleNotExist     = errors.New("role does not exist")
-	ErrUnauthorized     = errors.New("unauthorized access")
+	ErrUsernameNotExist   = errors.New("username does not exist")
+	ErrIDNotExist         = errors.New("id does not exist")
+	ErrRoleNotExist       = errors.New("role does not exist")
+	ErrUnauthorized       = errors.New("unauthorized access")
+	ErrNoOvertimeApproved = errors.New("no overtime approved")
+	ErrDateFormat         = errors.New("date format must be YYYY-MM-DD")
+	ErrDateTimeFormat     = errors.New("format must be YYYY-MM-DDTHH:MM:SS.NNNZ")
 )
 
 type Role uint32
@@ -50,19 +53,25 @@ type Status uint32
 
 const (
 	Unknown_Status Status = 0
-	Pending        Status = 1 << iota
+	Draft          Status = 1 << iota
+	Submitted
 	Approved
 	Rejected
+	Done
 )
 
 func StringToStatus(s string) Status {
 	switch strings.ToUpper(s) {
-	case "PENDING":
-		return Pending
+	case "DRAFT":
+		return Draft
+	case "SUBMITTED":
+		return Submitted
 	case "APPROVED":
 		return Approved
 	case "REJECTED":
 		return Rejected
+	case "DONE":
+		return Done
 	default:
 		return Unknown_Status
 	}
@@ -70,12 +79,16 @@ func StringToStatus(s string) Status {
 
 func (s Status) String() string {
 	switch s {
-	case Pending:
-		return "PENDING"
+	case Draft:
+		return "draft"
+	case Submitted:
+		return "submitted"
 	case Approved:
-		return "APPROVED"
+		return "approved"
 	case Rejected:
-		return "REJECTED"
+		return "rejected"
+	case Done:
+		return "done"
 	default:
 		return "UNKNOWN"
 	}

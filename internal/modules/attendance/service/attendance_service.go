@@ -2,13 +2,16 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/ilhamosaurus/HRIS/internal/dto"
 	"github.com/ilhamosaurus/HRIS/internal/model"
 	"github.com/ilhamosaurus/HRIS/internal/modules/attendance/dao"
+	overtimedao "github.com/ilhamosaurus/HRIS/internal/modules/overtime/dao"
 	"github.com/ilhamosaurus/HRIS/pkg/types"
 	"github.com/ilhamosaurus/HRIS/pkg/util"
+	"gorm.io/gorm"
 )
 
 type AttendanceService interface {
@@ -18,12 +21,16 @@ type AttendanceService interface {
 	Delete(context.Context, int64) error
 }
 
-func NewAttendanceService(attendanceDAO dao.AttendanceDAO) AttendanceService {
-	return &attendanceService{attendanceDAO: attendanceDAO}
+func NewAttendanceService(attendanceDAO dao.AttendanceDAO, overtimeDAO overtimedao.OvertimeDAO) AttendanceService {
+	return &attendanceService{
+		attendanceDAO: attendanceDAO,
+		overtimeDAO:   overtimeDAO,
+	}
 }
 
 type attendanceService struct {
 	attendanceDAO dao.AttendanceDAO
+	overtimeDAO   overtimedao.OvertimeDAO
 }
 
 func (s *attendanceService) CheckIn(ctx context.Context, date, checkIn time.Time) error {
@@ -36,13 +43,43 @@ func (s *attendanceService) CheckIn(ctx context.Context, date, checkIn time.Time
 		attendance.Username = username
 	}
 
+	if date.Weekday() == time.Saturday || date.Weekday() == time.Sunday {
+		_, err := s.overtimeDAO.GetOvertimeByDateUsername(ctx, date, username)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return types.ErrNoOvertimeApproved
+			}
+			return err
+		}
+	}
+
+	existingAttendance, err := s.attendanceDAO.GetByDateUsername(ctx, attendance.Username, date)
+	if err == nil && existingAttendance != nil {
+		existingAttendance = &attendance
+		return s.attendanceDAO.Update(ctx, existingAttendance)
+	}
+
 	return s.attendanceDAO.Create(ctx, &attendance)
 }
 
 func (s *attendanceService) CheckOut(ctx context.Context, date, checkOut time.Time) error {
+	var (
+		overtime *model.Overtime
+		err      error
+	)
 	username, ok := util.GetUsernameFromCtx(ctx)
 	if !ok {
 		return types.ErrUsernameNotExist
+	}
+
+	if date.Weekday() == time.Saturday || date.Weekday() == time.Sunday {
+		overtime, err = s.overtimeDAO.GetOvertimeByDateUsername(ctx, date, username)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return types.ErrNoOvertimeApproved
+			}
+			return err
+		}
 	}
 
 	attendance, err := s.attendanceDAO.GetByDateUsername(ctx, username, date)
@@ -51,7 +88,19 @@ func (s *attendanceService) CheckOut(ctx context.Context, date, checkOut time.Ti
 	}
 
 	attendance.CheckOut = &checkOut
-	return s.attendanceDAO.Update(ctx, attendance)
+	if err := s.attendanceDAO.Update(ctx, attendance); err != nil {
+		return err
+	}
+
+	if overtime != nil && overtime.Date.Equal(attendance.Date) && overtime.Username == attendance.Username {
+		overtime.StartTime = attendance.CheckIn
+		overtime.EndTime = checkOut
+		overtime.Hours = checkOut.Sub(attendance.CheckIn).Hours()
+		overtime.Status = types.Done
+		s.overtimeDAO.Update(ctx, overtime)
+	}
+
+	return nil
 }
 
 func (s *attendanceService) GetAttendances(ctx context.Context, req *dto.AttendancesQuery) ([]*model.Attendance, int64, error) {

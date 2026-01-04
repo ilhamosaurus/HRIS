@@ -1,0 +1,46 @@
+@baseUrl=http://localhost:9090/api/v1
+@page=page=1
+@pageSize=page_size=10
+
+###
+POST {{baseUrl}}/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "HrisAdm@2o25"
+}
+
+###
+POST {{baseUrl}}/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "alex-panda27",
+    "password": "Inl^8trfdu"
+}
+
+###
+POST {{baseUrl}}/attendances/check-in HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJhbGV4LXBhbmRhMjciLCJyb2xlIjo0LCJpc3MiOiJIUklTIiwiZXhwIjoxNzY3NTA4NjAzfQ.Y-egQ1AGYUjybhC4E2x__4GZMXBUbUieBQtJ95SneNs
+
+###
+POST {{baseUrl}}/attendances/check-out HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJhbGV4LXBhbmRhMjciLCJyb2xlIjo0LCJpc3MiOiJIUklTIiwiZXhwIjoxNzY3NTA4NjAzfQ.Y-egQ1AGYUjybhC4E2x__4GZMXBUbUieBQtJ95SneNs
+
+###
+GET {{baseUrl}}/attendances?{{page}}&{{pageSize}} HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJhbGV4LXBhbmRhMjciLCJyb2xlIjo0LCJpc3MiOiJIUklTIiwiZXhwIjoxNzY3NTA4NjAzfQ.Y-egQ1AGYUjybhC4E2x__4GZMXBUbUieBQtJ95SneNs
+
+###
+GET {{baseUrl}}/attendances?{{page}}&{{pageSize}} HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOjIsImlzcyI6IkhSSVMiLCJleHAiOjE3Njc1MDkzNDZ9.rddZ3gfrAaRU1s8WSlhYHWJlc5cwbwb6qLeWWW_RDCU
+
+###
+GET {{baseUrl}}/users?{{page}}&{{pageSize}} HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOjIsImlzcyI6IkhSSVMiLCJleHAiOjE3Njc1MDkzNDZ9.rddZ3gfrAaRU1s8WSlhYHWJlc5cwbwb6qLeWWW_RDCU
